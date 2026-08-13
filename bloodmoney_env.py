@@ -13,8 +13,12 @@ to train on.
 """
 
 import time as time_module
+import ctypes
 import pymem
 import pydirectinput
+import win32gui
+import win32process
+import win32con
 
 # Disable pydirectinput's built-in pause between actions for speed.
 pydirectinput.PAUSE = 0.0
@@ -56,6 +60,55 @@ class BloodMoneyEnv:
     def __init__(self):
         self.pm = pymem.Pymem(PROCESS_NAME)
         self.base = self.pm.base_address
+        self.hwnd = None
+        self.focus_game_window()
+
+    def focus_game_window(self):
+        """
+        Find the game's window by matching its owning process ID (which we
+        already know exactly, from pymem) rather than guessing its title
+        text - titles can vary with fullscreen/borderless mode, but the
+        process ID is unambiguous. Bring it to the foreground so
+        pydirectinput's keystrokes/clicks actually reach the game instead
+        of whatever window (e.g. this terminal) currently has focus.
+        """
+        target_pid = self.pm.process_id
+
+        def _callback(hwnd, results):
+            if not win32gui.IsWindowVisible(hwnd):
+                return
+            _, pid = win32process.GetWindowThreadProcessId(hwnd)
+            if pid == target_pid:
+                results.append(hwnd)
+
+        results = []
+        win32gui.EnumWindows(_callback, results)
+
+        if not results:
+            print(f"WARNING: couldn't find a visible window for PID {target_pid}. "
+                  f"Inputs may not reach the game.")
+            return False
+
+        self.hwnd = results[0]
+
+        # Restore if minimized.
+        win32gui.ShowWindow(self.hwnd, win32con.SW_RESTORE)
+
+        # Windows blocks background processes from stealing foreground
+        # focus outright. Simulating an Alt key press right before the
+        # call is a well-known workaround that satisfies one of the
+        # conditions Windows allows for a focus switch.
+        try:
+            ctypes.windll.user32.keybd_event(0x12, 0, 0, 0)  # Alt down
+            win32gui.SetForegroundWindow(self.hwnd)
+            ctypes.windll.user32.keybd_event(0x12, 0x2, 0, 0)  # Alt up
+        except Exception as e:
+            print(f"WARNING: couldn't force focus ({e}). "
+                  f"Inputs may not reach the game this attempt.")
+            return False
+
+        time_module.sleep(0.2)  # give the OS a moment to actually switch focus
+        return True
 
     # -- low-level memory helpers -----------------------------------------
 
@@ -134,6 +187,7 @@ class BloodMoneyEnv:
         Covers both cases: death screen (Restart already focused) and
         pause menu (Escape opens it, Restart is the first option).
         """
+        self.focus_game_window()
         pydirectinput.press("esc")
         time_module.sleep(0.3)
         pydirectinput.press("enter")
