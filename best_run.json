@@ -1,0 +1,577 @@
+{
+  "score": 2000781.1794397873,
+  "final_state": {
+    "level": 0,
+    "time_ms": 0,
+    "witnesses": 0,
+    "bodies_found": 0,
+    "covers_blown": 0,
+    "targets_killed": 0,
+    "position": [
+      766.6443481445312,
+      -619.9876708984375,
+      1734.4244384765625
+    ]
+  },
+  "generation": 1,
+  "saved_at": "2026-08-18 00:56:16",
+  "genome": [
+    {
+      "start": 0.05,
+      "type": "move_key",
+      "key": "shift",
+      "duration": 13.07
+    },
+    {
+      "start": 0.07,
+      "type": "move_key",
+      "key": "e",
+      "duration": 0.05
+    },
+    {
+      "start": 0.15,
+      "type": "move_key",
+      "key": "ctrl",
+      "duration": 0.12
+    },
+    {
+      "start": 2.4,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 15
+    },
+    {
+      "start": 2.8,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 15
+    },
+    {
+      "start": 3.2,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 15
+    },
+    {
+      "start": 4.0,
+      "type": "snap_turn",
+      "direction": "left",
+      "angle": 45
+    },
+    {
+      "start": 4.4,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 15
+    },
+    {
+      "start": 5.84,
+      "type": "move_key",
+      "key": "a",
+      "duration": 0.97
+    },
+    {
+      "start": 6.0,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 45
+    },
+    {
+      "start": 6.4,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 15
+    },
+    {
+      "start": 6.51,
+      "type": "equip_weapon",
+      "scroll_clicks": -3,
+      "hold_seconds": 2.2
+    },
+    {
+      "start": 8.8,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 15
+    },
+    {
+      "start": 9.27,
+      "type": "throw_item",
+      "duration": 0.58,
+      "aim_dx": 83,
+      "aim_dy": -61
+    },
+    {
+      "start": 10.4,
+      "type": "snap_turn",
+      "direction": "left",
+      "angle": 15
+    },
+    {
+      "start": 10.51,
+      "type": "move_key",
+      "key": "w",
+      "duration": 2.33
+    },
+    {
+      "start": 10.8,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 45
+    },
+    {
+      "start": 10.81,
+      "type": "snap_turn",
+      "direction": "left",
+      "angle": 15
+    },
+    {
+      "start": 10.84,
+      "type": "move_key",
+      "key": "a",
+      "duration": 0.24
+    },
+    {
+      "start": 11.2,
+      "type": "snap_turn",
+      "direction": "left",
+      "angle": 15
+    },
+    {
+      "start": 11.73,
+      "type": "equip_weapon",
+      "scroll_clicks": -2,
+      "hold_seconds": 0.96
+    },
+    {
+      "start": 12.8,
+      "type": "snap_turn",
+      "direction": "left",
+      "angle": 45
+    },
+    {
+      "start": 12.81,
+      "type": "move_key",
+      "key": "d",
+      "duration": 0.52
+    },
+    {
+      "start": 13.12,
+      "type": "move_key",
+      "key": "w",
+      "duration": 1.14
+    },
+    {
+      "start": 13.2,
+      "type": "snap_turn",
+      "direction": "left",
+      "angle": 45
+    },
+    {
+      "start": 13.43,
+      "type": "move_key",
+      "key": "a",
+      "duration": 0.11
+    },
+    {
+      "start": 13.57,
+      "type": "fire_click",
+      "duration": 0.11
+    },
+    {
+      "start": 13.7,
+      "type": "move_key",
+      "key": "d",
+      "duration": 0.38
+    },
+    {
+      "start": 13.89,
+      "type": "equip_weapon",
+      "scroll_clicks": -1,
+      "hold_seconds": 1.62
+    },
+    {
+      "start": 15.47,
+      "type": "move_key",
+      "key": "d",
+      "duration": 1.02
+    },
+    {
+      "start": 15.71,
+      "type": "move_key",
+      "key": "w",
+      "duration": 1.15
+    },
+    {
+      "start": 16.0,
+      "type": "move_key",
+      "key": "ctrl",
+      "duration": 4.0
+    },
+    {
+      "start": 17.77,
+      "type": "fire_click",
+      "duration": 0.11
+    },
+    {
+      "start": 18.98,
+      "type": "fire_click",
+      "duration": 0.14
+    },
+    {
+      "start": 19.49,
+      "type": "toggle_holster"
+    },
+    {
+      "start": 19.95,
+      "type": "move_key",
+      "key": "w",
+      "duration": 5.38
+    },
+    {
+      "start": 20.15,
+      "type": "move_key",
+      "key": "shift",
+      "duration": 1.97
+    },
+    {
+      "start": 20.8,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 15
+    },
+    {
+      "start": 21.11,
+      "type": "move_key",
+      "key": "a",
+      "duration": 0.81
+    },
+    {
+      "start": 21.2,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 15
+    },
+    {
+      "start": 22.0,
+      "type": "snap_turn",
+      "direction": "left",
+      "angle": 180
+    },
+    {
+      "start": 22.4,
+      "type": "snap_turn",
+      "direction": "left",
+      "angle": 45
+    },
+    {
+      "start": 22.54,
+      "type": "move_key",
+      "key": "ctrl",
+      "duration": 14.77
+    },
+    {
+      "start": 22.67,
+      "type": "move_key",
+      "key": "d",
+      "duration": 1.76
+    },
+    {
+      "start": 23.2,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 15
+    },
+    {
+      "start": 23.6,
+      "type": "snap_turn",
+      "direction": "left",
+      "angle": 15
+    },
+    {
+      "start": 24.4,
+      "type": "snap_turn",
+      "direction": "left",
+      "angle": 45
+    },
+    {
+      "start": 24.8,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 180
+    },
+    {
+      "start": 25.2,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 45
+    },
+    {
+      "start": 25.22,
+      "type": "move_key",
+      "key": "a",
+      "duration": 1.4
+    },
+    {
+      "start": 25.6,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 45
+    },
+    {
+      "start": 25.9,
+      "type": "move_key",
+      "key": "s",
+      "duration": 2.28
+    },
+    {
+      "start": 26.83,
+      "type": "move_key",
+      "key": "a",
+      "duration": 1.64
+    },
+    {
+      "start": 28.45,
+      "type": "snap_turn",
+      "direction": "left",
+      "angle": 15
+    },
+    {
+      "start": 31.06,
+      "type": "move_key",
+      "key": "d",
+      "duration": 0.43
+    },
+    {
+      "start": 32.0,
+      "type": "snap_turn",
+      "direction": "left",
+      "angle": 15
+    },
+    {
+      "start": 32.06,
+      "type": "move_key",
+      "key": "d",
+      "duration": 4.62
+    },
+    {
+      "start": 33.81,
+      "type": "move_key",
+      "key": "w",
+      "duration": 0.52
+    },
+    {
+      "start": 35.61,
+      "type": "move_key",
+      "key": "w",
+      "duration": 1.11
+    },
+    {
+      "start": 36.95,
+      "type": "toggle_holster"
+    },
+    {
+      "start": 38.0,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 15
+    },
+    {
+      "start": 38.79,
+      "type": "fire_click",
+      "duration": 0.13
+    },
+    {
+      "start": 39.2,
+      "type": "snap_turn",
+      "direction": "left",
+      "angle": 180
+    },
+    {
+      "start": 39.6,
+      "type": "snap_turn",
+      "direction": "left",
+      "angle": 180
+    },
+    {
+      "start": 40.4,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 15
+    },
+    {
+      "start": 41.27,
+      "type": "fire_click",
+      "duration": 0.14
+    },
+    {
+      "start": 41.93,
+      "type": "fire_click",
+      "duration": 0.12
+    },
+    {
+      "start": 42.7,
+      "type": "fire_click",
+      "duration": 0.22
+    },
+    {
+      "start": 43.26,
+      "type": "fire_click",
+      "duration": 0.15
+    },
+    {
+      "start": 43.88,
+      "type": "toggle_holster"
+    },
+    {
+      "start": 44.39,
+      "type": "move_key",
+      "key": "w",
+      "duration": 14.77
+    },
+    {
+      "start": 44.49,
+      "type": "move_key",
+      "key": "shift",
+      "duration": 14.69
+    },
+    {
+      "start": 44.8,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 15
+    },
+    {
+      "start": 45.44,
+      "type": "move_key",
+      "key": "e",
+      "duration": 0.16
+    },
+    {
+      "start": 46.0,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 90
+    },
+    {
+      "start": 46.4,
+      "type": "snap_turn",
+      "direction": "left",
+      "angle": 45
+    },
+    {
+      "start": 46.88,
+      "type": "move_key",
+      "key": "a",
+      "duration": 0.22
+    },
+    {
+      "start": 47.2,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 15
+    },
+    {
+      "start": 47.32,
+      "type": "move_key",
+      "key": "a",
+      "duration": 0.22
+    },
+    {
+      "start": 47.6,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 15
+    },
+    {
+      "start": 48.0,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 15
+    },
+    {
+      "start": 48.4,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 15
+    },
+    {
+      "start": 48.8,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 45
+    },
+    {
+      "start": 49.2,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 15
+    },
+    {
+      "start": 49.6,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 90
+    },
+    {
+      "start": 50.8,
+      "type": "snap_turn",
+      "direction": "left",
+      "angle": 180
+    },
+    {
+      "start": 53.2,
+      "type": "snap_turn",
+      "direction": "left",
+      "angle": 15
+    },
+    {
+      "start": 53.32,
+      "type": "move_key",
+      "key": "d",
+      "duration": 0.69
+    },
+    {
+      "start": 53.6,
+      "type": "snap_turn",
+      "direction": "left",
+      "angle": 15
+    },
+    {
+      "start": 54.53,
+      "type": "move_key",
+      "key": "d",
+      "duration": 0.22
+    },
+    {
+      "start": 55.6,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 15
+    },
+    {
+      "start": 56.4,
+      "type": "snap_turn",
+      "direction": "left",
+      "angle": 45
+    },
+    {
+      "start": 58.0,
+      "type": "snap_turn",
+      "direction": "right",
+      "angle": 90
+    },
+    {
+      "start": 58.14,
+      "type": "move_key",
+      "key": "e",
+      "duration": 0.09
+    },
+    {
+      "start": 58.67,
+      "type": "move_key",
+      "key": "a",
+      "duration": 0.11
+    }
+  ]
+}

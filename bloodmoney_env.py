@@ -152,8 +152,37 @@ OFFSET_BODIES_FOUND = 0x5B2608  # int, bodies found; resets to 0 on mission rest
 OFFSET_COVERS_BLOWN = 0x5B2614  # int, cover-blown count; resets to 0 on mission restart
 OFFSET_TARGETS_KILLED = 0x5B25A4  # int, number of mission targets killed so far
 
+# Player position pointer chain, reverse-engineered from the open-source
+# 0xvpr/HM3-Trainer teleport hack (offsets.hpp / hacks.cpp / memory.hpp).
+# Resolution: start at exe_base + PLAYER_XYZ_BASE, then for each offset in
+# PLAYER_XYZ_OFFSETS: dereference the current address, then add the offset.
+# The final address holds x (float), with y and z immediately following.
+PLAYER_XYZ_BASE = 0x41F83C
+PLAYER_XYZ_OFFSETS = [0xA20, 0x4, 0x50, 0x24]
+
+# Entity list, reverse-engineered from the same trainer source. A single
+# dereference at this address gives an EntityList* (n_entities count,
+# followed by an array of Entity* pointers). Each Entity has x/y/z floats
+# at this fixed offset. Shares the same static base address as the player
+# pointer above, but resolved with a single dereference instead of the
+# longer offset chain.
+ENTITY_LIST_BASE = 0x41F83C
+ENTITY_XYZ_OFFSET = 0x3DC
+
 # Curtains Down has 2 targets (Alvaro D'Alvade and Richard Delahunt).
 TOTAL_TARGETS = 2
+
+# Fill this in with your real vantage-point coordinates - grab it with
+# test_position.py while standing where you actually shoot both targets.
+# Format: (x, y, z). Leave as None to disable distance-based scoring
+# entirely (falls back to the old kills-only behavior for that tier).
+VANTAGE_POINT = (465.093994140625, -644.819091796875, 1014.2216186523438)
+
+# Safety cap on the distance tie-breaker in score() - guarantees a clean
+# (undetected) unfinished run can never mathematically score worse than
+# a dirty (detected) unfinished run, no matter how large a real distance
+# value turns out to be.
+MAX_DISTANCE_CREDIT = 500_000
 
 # How long to wait after sending Escape -> Enter for the mission to actually
 # reset before we start reading state again. Tune this based on how long
@@ -258,6 +287,73 @@ class BloodMoneyEnv:
     def _read_int(self, offset):
         return self.pm.read_int(self.base + offset)
 
+    def _resolve_pointer_chain(self, base_offset, offset_chain):
+        """
+        Mirrors the exact algorithm from the open-source 0xvpr/HM3-Trainer
+        teleport hack (memory.hpp's find_dynamic_address): starting at
+        exe_base + base_offset, for each offset in the chain, dereference
+        the current address then add the offset. Returns the final
+        resolved address, or None if a null pointer is hit along the way.
+        """
+        addr = self.base + base_offset
+        for offset in offset_chain:
+            try:
+                addr = self.pm.read_uint(addr)
+            except Exception:
+                return None
+            if addr == 0:
+                return None
+            addr += offset
+        return addr
+
+    def get_position(self):
+        """
+        Returns (x, y, z) player position, or None if the pointer chain
+        couldn't be resolved (e.g. between missions, or during a menu).
+        """
+        addr = self._resolve_pointer_chain(PLAYER_XYZ_BASE, PLAYER_XYZ_OFFSETS)
+        if addr is None:
+            return None
+        try:
+            x = self.pm.read_float(addr)
+            y = self.pm.read_float(addr + 4)
+            z = self.pm.read_float(addr + 8)
+            return (x, y, z)
+        except Exception:
+            return None
+
+    def get_all_entity_positions(self):
+        """
+        Returns a list of (index, x, y, z) for every live entity (NPCs,
+        targets, etc.) in the level - reverse-engineered from the
+        open-source 0xvpr/HM3-Trainer (entity.hpp/hacks.cpp). Useful for
+        identifying which index corresponds to a specific NPC (e.g. by
+        standing near them and matching position).
+        """
+        try:
+            entity_list_ptr = self.pm.read_uint(self.base + ENTITY_LIST_BASE)
+            if entity_list_ptr == 0:
+                return []
+            n_entities = self.pm.read_uint(entity_list_ptr + 0x8)
+            if n_entities < 7 or n_entities > 167:
+                return []  # sanity check, same bounds the trainer uses
+
+            results = []
+            for i in range(n_entities):
+                entity_ptr = self.pm.read_uint(entity_list_ptr + 0xC + i * 4)
+                if entity_ptr == 0:
+                    continue
+                try:
+                    x = self.pm.read_float(entity_ptr + ENTITY_XYZ_OFFSET)
+                    y = self.pm.read_float(entity_ptr + ENTITY_XYZ_OFFSET + 4)
+                    z = self.pm.read_float(entity_ptr + ENTITY_XYZ_OFFSET + 8)
+                    results.append((i, x, y, z))
+                except Exception:
+                    continue
+            return results
+        except Exception:
+            return []
+
     def get_state(self):
         """Snapshot of everything the fitness function needs."""
         return {
@@ -267,6 +363,7 @@ class BloodMoneyEnv:
             "bodies_found": self._read_int(OFFSET_BODIES_FOUND),
             "covers_blown": self._read_int(OFFSET_COVERS_BLOWN),
             "targets_killed": self._read_int(OFFSET_TARGETS_KILLED),
+            "position": self.get_position(),
         }
 
     def is_finished(self, state=None):
@@ -309,6 +406,16 @@ class BloodMoneyEnv:
     def key_up(self, key):
         _scancode_key_up(key)
 
+    def mouse_down(self, button):
+        pydirectinput.mouseDown(button=button)
+
+    def mouse_up(self, button):
+        pydirectinput.mouseUp(button=button)
+
+    def scroll_now(self, clicks):
+        if clicks != 0:
+            _scroll_wheel(clicks)
+
     def send_key(self, key, duration=0.0):
         """Press and (optionally) hold a key for `duration` seconds."""
         _scancode_key_down(key)
@@ -329,12 +436,32 @@ class BloodMoneyEnv:
         finally:
             pydirectinput.mouseUp(button=button)
 
-    def send_look(self, dx, dy):
+    def send_look(self, dx, dy, steps=6, step_delay=0.008):
         """
-        Turn the camera during normal gameplay (not the weapon wheel) -
-        just a raw relative mouse move, no button held.
+        Turn the camera during normal gameplay (not the weapon wheel).
+        Split into several smaller sub-moves rather than one big
+        instantaneous jump - a single large relative move can overshoot
+        or "snap" in a way real continuous mouse input never would,
+        which likely explains the jittery, inconsistent turning seen in
+        genome playback.
         """
-        pydirectinput.moveRel(dx, dy, relative=True)
+        if steps <= 1:
+            pydirectinput.moveRel(dx, dy, relative=True)
+            return
+
+        # Distribute dx/dy across steps, carrying the rounding remainder
+        # forward so the total moved still exactly matches dx/dy overall.
+        remainder_x, remainder_y = 0.0, 0.0
+        for _ in range(steps):
+            step_x = dx / steps + remainder_x
+            step_y = dy / steps + remainder_y
+            move_x = round(step_x)
+            move_y = round(step_y)
+            remainder_x = step_x - move_x
+            remainder_y = step_y - move_y
+            pydirectinput.moveRel(move_x, move_y, relative=True)
+            if step_delay > 0:
+                time_module.sleep(step_delay)
 
     def send_toggle_holster(self):
         """A quick right-click tap (not a hold) holsters/unholsters whatever's currently equipped."""
@@ -481,10 +608,21 @@ class BloodMoneyEnv:
         start = time_module.time()
         idx = 0
         n = len(action_sequence)
+        last_focus_check = start
 
         try:
             while True:
-                elapsed = time_module.time() - start
+                now = time_module.time()
+                elapsed = now - start
+
+                # Periodically re-focus throughout the whole attempt, not
+                # just once at the start - if focus gets stolen at any
+                # point during a long run, every subsequent action would
+                # silently go nowhere, and no scheduling/calibration fix
+                # could compensate for that.
+                if now - last_focus_check >= 2.0:
+                    self.focus_game_window()
+                    last_focus_check = now
 
                 # Fire any actions whose scheduled time has arrived.
                 while idx < n and action_sequence[idx][0] <= elapsed:
@@ -514,32 +652,55 @@ class BloodMoneyEnv:
 
     def score(self, state):
         """
-        Lower is better. Three tiers, worst to best:
+        Lower is better. Four tiers, worst to best:
 
-          3. Didn't finish        - scored by how much progress was made
-                                     (targets killed so far), so the search
-                                     has a gradient to climb even before
-                                     anything ever completes the mission.
-          2. Finished, but broke  - better than not finishing at all, but
-             SA at some point       worse than any clean finish. Ranked by
-                                     how minor the break was.
-          1. Finished, clean SA   - ranked purely by time. Lower is faster.
+          4. Didn't finish, DIRTY   - already got spotted/left evidence.
+             (broke SA)               Ranked only by targets killed - NO
+                                       distance credit at all, so getting
+                                       close never rewards a run that blew
+                                       its cover to get there.
+          3. Didn't finish, CLEAN   - still stealthy. Ranked by targets
+             (still stealthy)         killed, then by distance to the
+                                       vantage point as a tie-breaker -
+                                       real gradient for "got closer while
+                                       staying hidden."
+          2. Finished, but broke   - better than not finishing, worse
+             SA at some point        than any clean finish. Ranked by how
+                                      minor the break was.
+          1. Finished, clean SA    - ranked purely by time. Lower is
+                                      faster.
 
-        The tier gaps are large fixed constants so a run in a better tier
-        always beats every run in a worse tier, regardless of the in-tier
-        details - but within a tier, runs are ranked by real progress/time,
-        not treated as identical.
+        Tier gaps are large fixed constants so a run in a better tier
+        always beats every run in a worse tier - critically, tier 3's
+        worst possible score is still better than tier 4's best possible
+        score, so distance can never outweigh staying undetected.
         """
-        TIER_UNFINISHED = 2_000_000
+        TIER_UNFINISHED_DIRTY = 3_000_000
+        TIER_UNFINISHED_CLEAN = 2_000_000
         TIER_FINISHED_DIRTY = 1_000_000
 
         targets_killed = state["targets_killed"]
 
         if not self.is_finished(state):
-            # More targets killed = closer to actually finishing = better,
-            # even though it's still in the worst tier overall.
             progress_credit = targets_killed * 100_000
-            return TIER_UNFINISHED - progress_credit
+
+            if not self.is_clean(state):
+                # Already spotted/left evidence - no distance credit at
+                # all, ranked only by targets killed so far.
+                return TIER_UNFINISHED_DIRTY - progress_credit
+
+            # Still stealthy - distance to the vantage point is a real,
+            # continuous tie-breaker on top of targets killed. Clamped so
+            # even a huge distance can never push this tier's score above
+            # the dirty tier's boundary - the invariant (clean always
+            # beats dirty) must hold no matter what distance is measured.
+            distance = None
+            if state.get("position") and VANTAGE_POINT:
+                px, py, pz = state["position"]
+                vx, vy, vz = VANTAGE_POINT
+                distance = ((px - vx) ** 2 + (py - vy) ** 2 + (pz - vz) ** 2) ** 0.5
+            distance_credit = min(distance, MAX_DISTANCE_CREDIT) if distance is not None else 0.0
+            return TIER_UNFINISHED_CLEAN - progress_credit + distance_credit
 
         if not self.is_clean(state):
             # Finished, but broke SA. Rank by how minor the break was -
